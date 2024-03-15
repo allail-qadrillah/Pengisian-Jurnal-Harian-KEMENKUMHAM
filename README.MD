@@ -1,28 +1,32 @@
 # PENGISIAN JURNAL HARIAN SIMPEG KEMENKUMHAM
-Mengisi jurnal harian secara otomatis dari hari senin sampai sabtu.
+Program ini dirancang untuk mengisi jurnal harian SIMPEG KEMENKUMHAM secara otomatis dari hari Senin hingga Sabtu. Kegiatan yang diisi dalam jurnal harian diambil dari  [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1nZFDpksz0wP68EUuUR_FfiENzwdYnKU0HHoWhbjLlDo/edit?usp=sharing) yang dapat diedit kapan pun. Program ini menyediakan dua cara untuk dijalankan: pada komputer lokal atau dengan deployment pada AWS Lambda.
 
-Dengan format hari Senin sampai Kamis dan Jumat dengan Sabtu kegiatan yang berbeda.
-
-Kegiatan diambil dari [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1nZFDpksz0wP68EUuUR_FfiENzwdYnKU0HHoWhbjLlDo/edit?usp=sharing) sehingga dapat diedit kapanpun.
-
-![Spreadsheet image](./doc/spreadsheet.png)
+![Spreadsheet image](./docs/spreadsheet.png)
 ---
 
-## Bagaimana Menjalankan programnya?
+## Persyaratan
+Sebelum menjalankan program, pastikan Anda memiliki:
+
+1. Akses ke Google Spreadsheet yang berisi kegiatan harian.
+2. Kredensial untuk mengakses Google Spreadsheet API.
+3. Akun email dan kata sandi untuk mengirim email (jika diperlukan).
+4. NIP dan kata sandi untuk login ke SIMPEG KEMENKUMHAM.
+5. Docker (jika menjalankan pada komputer lokal).
+6. Akun AWS (jika melakukan deployment pada AWS Lambda).
+
+## Menjalankan Program pada Komputer Lokal
 Terdapat dua cara menjalankan program ini
 
-Pertama adalah menjalankannya pada local computer dan Kedua mendeploy pada AWS Lambda.
+Ikuti langkah-langkah berikut untuk menjalankan program pada komputer lokal:
 
-## 1.Menjalankannya pada Local Computer
 #### 1. Clone Repository 
-clone repository ini 
+clone repository ini dengan perintah
 ```bash
-git clone
+git https://github.com/allail-qadrillah/Pengisian-Jurnal-Harian-KEMENKUMHAM-Pegawai-senin-kamis-jumat-sabtu.git
 ```
 #### 2. Konfigurasi [Google Spreadsheet API](https://www.youtube.com/watch?v=zCEJurLGFRk) dan [Sheet Template](https://docs.google.com/spreadsheets/d/1nZFDpksz0wP68EUuUR_FfiENzwdYnKU0HHoWhbjLlDo/edit?usp=sharing)
-lakukan konfigurasi untuk mengakases spreadsheet. 
 
-dapatkan sheet credential dan buatkan nama file sebagai `sheet_cred.json`
+dapatkan konfigurasi Google Spreadsheet API dan dapatkan kredensial sebagai file `sheet_cred.json`
 
 #### 3. Dapatkan [Email Password](https://www.youtube.com/watch?v=5YdpQF0TFpc) 
 email password diperlukan untuk dapat mengirim email dengan library `smtplib`
@@ -50,6 +54,12 @@ docker run -d -p 4444:4444 -p 7900:7900 --shm-size="2g" selenium/standalone-chro
 ```
 Untuk melihat apa yang terjadi pada container, akses ke  http://localhost:7900/?autoconnect=1&resize=scale&password=secret
 
+Anda juga dapat menjalankan kontainer dengan Docker Compose
+
+```bash
+docker-compose up -d
+```
+Akses UI dari Selenium Grid di http://localhost:4444/ui
 #### 6. RUN!
 buat Virtual Environtment
 ```bash
@@ -65,7 +75,7 @@ Jalankan program dengan perintah
 python local.py
 ```
 
-## 2. Menjalankannya pada AWS Lambda (deployment)
+## Menjalankannya pada AWS Lambda (deployment)
 Mendeploy program pada AWS Lambda dapat menghemat pengeluaran karena dijalankan secara server less (menggunakan resource komputer ketika diperlukan saja)dari pada mendeploynya dengan menjalankan 24/7. pada AWS Lambda kita dapat menggunakan Trigger Cronjob untuk menschedule program.
 
 Sebelum melanjutkan step dibawah, pastikan memiliki akun AWS dan command prompt telah terkoneksi/terAutentikasi dengan AWS
@@ -80,14 +90,20 @@ Sebelum melanjutkan step dibawah, pastikan memiliki akun AWS dan command prompt 
 #### 2. Buat Function [AWS Lambda](https://ap-southeast-1.console.aws.amazon.com/lambda)
 1. klik **Create function**
 2. pilih kontainer yang telah dipush dan klik **Create function**
-![pilih image dari ECR](/doc/chose_image.png)
+![pilih image dari ECR](/docs/chose_image.png)
 3. karena menggunakan selenium, kita perlu mengubah konfigurasi Timeout minimal menjadi 5 menit dan Memory minimal menjadi 512 MB.  
   ![change configuration](/doc/change_configuration_func.png)
 4. setup environment variabel
 4. Test fungsinya
 
 #### 3. Tambahkan Trigger
-![alt text](image.png)
+program akan dijalankan pada setiap jam 12 malam, maka gunakan EventBridge untuk melakukan hal tersebut.
 
+schedule expressionnya adalah `cron(* 17 ? * MON-SAT *`
 
-KETIKA LAMBDA SELENIUM DI TEST UNTUK YANG KEDUA DAN SETERUSNYA DAPET ERROR
+nilai **17** digunakan untuk menyesuaikan dengan timezone WIB, karena server memiliki timezone UTC
+![alt text](docs/add_trigger.png)
+
+## Struktur Kode dan Dokumentasi
+
+Kode sumber program ini ditulis dalam bahasa Python dan menggunakan beberapa library seperti `selenium`, `smtplib`, dan `gspread`. Dokumentasi kode tersedia dalam bentuk komentar di dalam file sumber.

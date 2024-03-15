@@ -6,28 +6,52 @@ import os
 
 load_dotenv()
 
+# The scope of the Google Sheets API that allows us to read and write data.
 scopes = [
     "https://www.googleapis.com/auth/spreadsheets"
 ]
+# The credentials to access the Google Sheets API.
 creds = Credentials.from_service_account_file(
     "sheet_cred.json", scopes=scopes)
 client = gspread.authorize(creds)
 worksheet = client.open_by_key(os.getenv('sheet_id')).sheet1
 
 def get_sheet_row_col(row=int, col=int):
-    """mendapatkan data dari spredsheet dengan memperolehnya dari nilai baris dan kolom
-    """
-    return worksheet.cell(row, col).value
+  """
+  Get the value of a cell in a Google Sheet.
+
+  Parameters:
+  - row (int): The row number of the cell.
+  - col (int): The column number of the cell.
+
+  Returns:
+  - str: The value of the cell.
+
+  Example:
+  get_sheet_row_col(1, 1)  # Returns the value of the cell in the first row and first column.
+  """
+  return worksheet.cell(row, col).value
 
 def get_sheet_table_values() -> list:
     """medapatkan semua data dari tabel dalam bantuk list"""
     return worksheet.get_all_values()[:9]
 
 def get_sheet_time(value) -> str:
-    """mendapatkan nilai waktu jam dan menit
-    - jika nilainya adalah integer dan dibawah 10, tambahkan 0 dibelakangnya. 
-    karena nilai yang diperlukan oleh jurnal adalah seperti 01-09"""
+    """
+    Converts a value to a string representation of time.
 
+    Parameters:
+    - value (int or str): The value to be converted. If an integer between 0 and 9 (inclusive), it will be padded with a leading zero.
+
+    Returns:
+    - str: The string representation of the value.
+
+    Example:
+    >>> get_sheet_time(5)
+    '05'
+    >>> get_sheet_time('10')
+    '10'
+    """
     try:
       value = int(value)  # jika value adalah integer
       if isinstance(value, int) and 0 <= value <= 9:
@@ -39,9 +63,29 @@ def get_sheet_time(value) -> str:
 
 
 def get_skp_value(skp):
-    """mendapatkan nilai value SKP dari spreadsheet
-    return: index, value
-    ex: get_skp_value(2, 7)[0] or get_skp_value(2, 7)[1]
+    """
+    This function takes a string parameter 'skp' and returns a tuple containing an integer value and a string value.
+
+    Parameters:
+    - skp (str): The input string representing the SKP value.
+
+    Returns:
+    - tuple: A tuple containing an integer value and a string value. The integer value represents the SKP category, while the string value represents the SKP code.
+
+    SKP Categories:
+    0: Membantu pelaksanaan tugas dan pendalaman materi bidang pengamanan
+    1: Membantu pelaksanaan tugas dalam pendalaman materi bidang pelayanan tahanan
+    2: Membantu pelaksanaan tugas dalam pendalaman materi bidang pengelolaan
+    3: Melaksanakan tugas lainnya yang diperintahkan oleh pimpinan
+    4: Lain-Lain
+    5: Tugas Tambahan
+    6: Kreatifitas
+
+    SKP Codes:
+    - For categories 0 to 3: A string value in the format '{current_year}999967720178403_{category_number}'.
+    - For category 4: The string value is 'lainlain'.
+    - For category 5: The string value is '2'.
+    - For category 6: The string value is '3'.
     """
 
     if skp == "Membantu pelaksanaan tugas dan pendalaman materi bidang pengamanan":
