@@ -193,7 +193,7 @@ class BOT(Util):
           sleep(3)
 
         except Exception as e:
-          botlog.critical("Login Failed", str(e))
+          botlog.critical("Login Failed", repr(e))
           self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
                         body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa tidak dapat login ke SIMPEG KEMENKUMHAM. Terjadi kesalahan {repr(e)}.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
           
@@ -225,7 +225,7 @@ class BOT(Util):
         Returns:
         - None
         """
-        max_retries = 10
+        max_retries = 15
         retries = 0
         botlog.info(f"Mengisi jurnal harian {kegiatan} | waktu mulai {jam_mulai}:{menit_mulai} & waktu selesai {jam_selesai}:{menit_selesai} | SKP {skp} dan jumlah diselesaikan {jumlah_diselesaikan}")
         # melakukan pengisian form dengan mencoba ulang ketika ada error.
@@ -276,6 +276,10 @@ class BOT(Util):
 
                 if retries == max_retries:
                     botlog.info("Jumlah percobaan maksimum telah tercapai. Tidak dapat melanjutkan.")
+                    self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
+                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} Gagal di isi.\
+                                    \n\nTerima kasih atas perhatiannya,\
+                                    \nSalam hormat.")
                     break
                 
     def is_has_filled(self) -> bool:
