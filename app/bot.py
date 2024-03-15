@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, UnexpectedAlertPresentException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -31,7 +31,7 @@ class BOT(Util):
         - username (str): The username for login.
         - password (str): The password for login.
         - is_complete_fill (bool): Flag to indicate if the journal filling process is complete. Default is False.
-        - timeout_occured (bool): Flag to indicate if a timeout occurred during the journal filling process. Default is False.
+        - exception_occured (bool): Flag to indicate if a timeout occurred during the journal filling process. Default is False.
         - server (str): The server to be used for execution.
 
         Returns:
@@ -41,7 +41,8 @@ class BOT(Util):
         self.username = os.getenv('nip')
         self.password = os.getenv('password')
         self.is_complete_fill = False
-        self.timeout_occured = False
+        self.exception_occured = False
+        self.is_login = False
         self.server = server
 
         if self.server == 'lambda':
@@ -179,24 +180,32 @@ class BOT(Util):
         botlog.info("Login ...")
         
         try:
-          self.get('https://simpeg.kemenkumham.go.id/devp/siap/signin.php')
-          # USERNAME FILL FORM
-          self.wait_element_input(input=self.username, XPATH="/html/body/div[1]/div/div/div/div/div/div/div[2]/input[1]")
-          # USERNAME CLICK FORM
-          self.wait_element_click(XPATH="/html/body/div[1]/div/div/div/div/div/div/div[2]/input[2]")
-          # PASSWORD FILL FORM
-          self.wait_element_input(input=self.password, XPATH="/html/body/div[2]/div[2]/form/input[7]")
-          # PASSWORD CLICK FORM
-          self.wait_element_click(XPATH="/html/body/div[2]/div[3]/button[1]")
+            self.get('https://simpeg.kemenkumham.go.id/devp/siap/signin.php')
+            # USERNAME FILL FORM
+            self.wait_element_input(input=self.username, XPATH="/html/body/div[1]/div/div/div/div/div/div/div[2]/input[1]")
+            # USERNAME CLICK FORM
+            self.wait_element_click(XPATH="/html/body/div[1]/div/div/div/div/div/div/div[2]/input[2]")
+            # PASSWORD FILL FORM
+            self.wait_element_input(input=self.password, XPATH="/html/body/div[2]/div[2]/form/input[7]")
+            # PASSWORD CLICK FORM
+            self.wait_element_click(XPATH="/html/body/div[2]/div[3]/button[1]")
 
-          botlog.info("Login Done")
-          sleep(3)
+            botlog.info("Login Done")
+            sleep(3)
+            return True
+        
+        except UnexpectedAlertPresentException as uape: 
+            botlog.critical(f"Login Failed {repr(uape)}")
+            self.exception_occured = True
+            return False
 
         except Exception as e:
-          botlog.critical("Login Failed", repr(e))
-          self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
-                        body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa tidak dapat login ke SIMPEG KEMENKUMHAM. Terjadi kesalahan {repr(e)}.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
-          
+            botlog.critical(f"Login Failed {repr(e)}")
+            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
+                            body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa tidak dapat login ke SIMPEG KEMENKUMHAM. Terjadi kesalahan {repr(e)}.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
+            self.exception_occured = True
+            return False
+            
     def fill_jurnal(self, jam_mulai:str, menit_mulai:str, jam_selesai:str, menit_selesai:str,
                     skp: int, skp_value: str, kegiatan: str, jumlah_diselesaikan: int):
         """This method is used to fill out the daily journal on the SIMPEG website. It takes in the following parameters:
@@ -265,9 +274,9 @@ class BOT(Util):
                 # BTN BATAL
                 # self.wait_element_click(XPATH="/html/body/div[4]/div[3]/button[1]")
             
-            except TimeoutException:
+            except TimeoutException: # ERROR Anda tidak terdaftar sebagai pegawai WFH!
                 botlog.critical("TimeoutException: Situs pengisian jurnal tidak dapat diakses (Anda tidak terdaftar sebagai pegawai WFH)" )
-                self.timeout_occured = True
+                self.exception_occured = True
                 break
             
             except Exception as e:
@@ -328,17 +337,46 @@ class BOT(Util):
 
         while not self.is_complete_fill:
             if self.is_complete_fill: break
+            if self.exception_occured: break
             # JIKA TIDAK LIBUR LANJUT TASKS
             if not self.is_holiday():
 
-                self.login()
-                # JIKA HARI INI BELUM TERISI?
-                botlog.info("MENGISI JURNAL HARIAN ...")
-                # APAKAH HARI INI SENIN - KAMIS?
-                if self.is_senin_kamis():
-                    for item in jurnal.get("senin-kamis"):
-                        # OPEN WEB JURNAL HARIAN
-                        self.fill_jurnal(
+                if self.login(): # JIKA LOGIN BERHASIL
+                    # JIKA HARI INI BELUM TERISI?
+                    botlog.info("MENGISI JURNAL HARIAN ...")
+                    # APAKAH HARI INI SENIN - KAMIS?
+                    if self.is_senin_kamis():
+                        for item in jurnal.get("senin-kamis"):
+                            # OPEN WEB JURNAL HARIAN
+                            self.fill_jurnal(
+                                                jam_mulai=item.get("jam_mulai"),
+                                                menit_mulai=self.random_time(time=item.get("menit_mulai")),
+                                                jam_selesai=item.get("jam_selesai"),
+                                                menit_selesai=self.random_time(time=item.get("menit_selesai")),
+                                                skp=item.get("skp"),
+                                                skp_value=item.get("skp_value"),
+                                                kegiatan=item.get("kegiatan"),
+                                                jumlah_diselesaikan=item.get("jumlah_diselesaikan")
+                                            )
+                            if self.exception_occured == True:
+                                self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
+                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
+                                break
+                            
+                        if self.exception_occured == False:
+                            self.is_complete_fill = True
+                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
+                                        body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
+                                        \n\n{self.parse_data_to_pretty_output(jurnal, 'senin-kamis')} \
+                                        \n\nTerima kasih atas perhatiannya,\
+                                        \nSalam hormat.")
+                            botlog.info("FILL JURNAL SENIN KAMIS DONE")
+        
+                    # APAKAH HARI INI JUMAT - SABTU?
+                    elif self.is_jumat_sabtu():
+                        for item in jurnal.get("jumat-sabtu"):
+                            # OPEN WEB JURNAL HARIAN
+                            self.fill_jurnal(
                                             jam_mulai=item.get("jam_mulai"),
                                             menit_mulai=self.random_time(time=item.get("menit_mulai")),
                                             jam_selesai=item.get("jam_selesai"),
@@ -348,51 +386,26 @@ class BOT(Util):
                                             kegiatan=item.get("kegiatan"),
                                             jumlah_diselesaikan=item.get("jumlah_diselesaikan")
                                         )
-                        if self.timeout_occured == True:
-                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
-                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
-                            break
-                        
-                    if self.timeout_occured == False:
-                        self.is_complete_fill = True
-                        self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
-                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
-                                    \n\n{self.parse_data_to_pretty_output(jurnal, 'senin-kamis')} \
-                                    \n\nTerima kasih atas perhatiannya,\
-                                    \nSalam hormat.")
-                        botlog.info("FILL JURNAL SENIN KAMIS DONE")
-    
-                # APAKAH HARI INI JUMAT - SABTU?
-                elif self.is_jumat_sabtu():
-                    for item in jurnal.get("jumat-sabtu"):
-                        # OPEN WEB JURNAL HARIAN
-                        self.fill_jurnal(
-                                        jam_mulai=item.get("jam_mulai"),
-                                        menit_mulai=self.random_time(time=item.get("menit_mulai")),
-                                        jam_selesai=item.get("jam_selesai"),
-                                        menit_selesai=self.random_time(time=item.get("menit_selesai")),
-                                        skp=item.get("skp"),
-                                        skp_value=item.get("skp_value"),
-                                        kegiatan=item.get("kegiatan"),
-                                        jumlah_diselesaikan=item.get("jumlah_diselesaikan")
-                                    )
-                        if self.timeout_occured == True:
-                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
-                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
-                            break
+                            if self.exception_occured == True:
+                                self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
+                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
+                                break
 
-                    if self.timeout_occured == False: 
-                        self.is_complete_fill = True
-                        self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
-                                        body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
-                                    \n\n{self.parse_data_to_pretty_output(jurnal, 'jumat-sabtu')} \
-                                    \n\nTerima kasih atas perhatiannya,\
-                                    \nSalam hormat.")
-                        botlog.info("FILL JURNAL JUMAT SABTU DONE")
+                        if self.exception_occured == False: 
+                            self.is_complete_fill = True
+                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
+                                            body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
+                                        \n\n{self.parse_data_to_pretty_output(jurnal, 'jumat-sabtu')} \
+                                        \n\nTerima kasih atas perhatiannya,\
+                                        \nSalam hormat.")
+                            botlog.info("FILL JURNAL JUMAT SABTU DONE")
 
+                else: 
+                    botlog.critical("Tidak dapat melanjutkan proses karena login gagal.")
+                    break
             else:
                 botlog.info("HARI INI LIBUR")
                 break
             
-        self.driver.close()
+        # self.driver.close()
         botlog.info("================= TASK DONE =================")
