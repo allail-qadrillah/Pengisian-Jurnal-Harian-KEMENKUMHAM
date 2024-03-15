@@ -92,14 +92,14 @@ Sebelum melanjutkan step dibawah, pastikan memiliki akun AWS dan command prompt 
 2. pilih kontainer yang telah dipush dan klik **Create function**
 ![pilih image dari ECR](/docs/chose_image.png)
 3. karena menggunakan selenium, kita perlu mengubah konfigurasi Timeout minimal menjadi 5 menit dan Memory minimal menjadi 512 MB.  
-  ![change configuration](/doc/change_configuration_func.png)
+  ![change configuration](/docs/change_configuration_func.png)
 4. setup environment variabel
 4. Test fungsinya
 
 #### 3. Tambahkan Trigger
 program akan dijalankan pada setiap jam 12 malam, maka gunakan EventBridge untuk melakukan hal tersebut.
 
-schedule expressionnya adalah `cron(* 17 ? * MON-SAT *`
+schedule expressionnya adalah `cron(* 17 ? * MON-SAT *)`
 
 nilai **17** digunakan untuk menyesuaikan dengan timezone WIB, karena server memiliki timezone UTC
 ![alt text](docs/add_trigger.png)

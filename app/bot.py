@@ -13,6 +13,7 @@ import os
 load_dotenv()
 botlog = logging.getLogger(__name__)
 botlog.setLevel(logging.INFO)
+
 class BOT(Util):
     """
     This code snippet defines a class called BOT that is used for automating tasks on a website using Selenium. 
@@ -196,7 +197,6 @@ class BOT(Util):
           self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
                         body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa tidak dapat login ke SIMPEG KEMENKUMHAM. Terjadi kesalahan {repr(e)}.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
           
-
     def fill_jurnal(self, jam_mulai:str, menit_mulai:str, jam_selesai:str, menit_selesai:str,
                     skp: int, skp_value: str, kegiatan: str, jumlah_diselesaikan: int):
         """This method is used to fill out the daily journal on the SIMPEG website. It takes in the following parameters:
@@ -261,14 +261,12 @@ class BOT(Util):
                 # KLIK BTN SIMPAN
                 self.wait_element_click(XPATH="/html/body/div[4]/div[3]/button[2]")
             
-                # JIKA BERHASIL TANPA ERROR. KELUAR DARI LOOP
                 break
                 # BTN BATAL
                 # self.wait_element_click(XPATH="/html/body/div[4]/div[3]/button[1]")
+            
             except TimeoutException:
                 botlog.critical("TimeoutException: Situs pengisian jurnal tidak dapat diakses (Anda tidak terdaftar sebagai pegawai WFH)" )
-                self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
-                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
                 self.timeout_occured = True
                 break
             
@@ -346,15 +344,19 @@ class BOT(Util):
                                             kegiatan=item.get("kegiatan"),
                                             jumlah_diselesaikan=item.get("jumlah_diselesaikan")
                                         )
-                        if self.timeout_occured:break
-
-                    self.is_complete_fill = True
-                    self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
-                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
-                                \n\n{self.parse_data_to_pretty_output(jurnal, 'senin-kamis')} \
-                                \n\nTerima kasih atas perhatiannya,\
-                                \nSalam hormat.")
-                    botlog.info("FILL JURNAL SENIN KAMIS DONE")
+                        if self.timeout_occured == True:
+                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
+                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
+                            break
+                        
+                    if self.timeout_occured == False:
+                        self.is_complete_fill = True
+                        self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
+                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
+                                    \n\n{self.parse_data_to_pretty_output(jurnal, 'senin-kamis')} \
+                                    \n\nTerima kasih atas perhatiannya,\
+                                    \nSalam hormat.")
+                        botlog.info("FILL JURNAL SENIN KAMIS DONE")
     
                 # APAKAH HARI INI JUMAT - SABTU?
                 elif self.is_jumat_sabtu():
@@ -370,15 +372,19 @@ class BOT(Util):
                                         kegiatan=item.get("kegiatan"),
                                         jumlah_diselesaikan=item.get("jumlah_diselesaikan")
                                     )
-                        if self.timeout_occured:break
-                        
-                    self.is_complete_fill = True
-                    self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
-                                    body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
-                                \n\n{self.parse_data_to_pretty_output(jurnal, 'jumat-sabtu')} \
-                                \n\nTerima kasih atas perhatiannya,\
-                                \nSalam hormat.")
-                    botlog.info("FILL JURNAL JUMAT SABTU DONE")
+                        if self.timeout_occured == True:
+                            self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date} Gagal",
+                                body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} gagal di isi. Situs pengisian jurnal tidak dapat diakses karena 'Anda tidak terdaftar sebagai pegawai WFH'.\n\nTerima kasih atas perhatiannya,\nSalam hormat.")
+                            break
+
+                    if self.timeout_occured == False: 
+                        self.is_complete_fill = True
+                        self.send_email(subject=f"Pengisian Jurnal SIMPEG KEMENKUMHAM Tanggal {self.date}",
+                                        body=f"Salam. Semoga anda dalam keadaan baik, saya ingin memberitahu anda bahwa jurnal harian untuk tanggal {self.date} telah berhasil di isi. Berikut adalah rincian kegiatan hari ini:\
+                                    \n\n{self.parse_data_to_pretty_output(jurnal, 'jumat-sabtu')} \
+                                    \n\nTerima kasih atas perhatiannya,\
+                                    \nSalam hormat.")
+                        botlog.info("FILL JURNAL JUMAT SABTU DONE")
 
             else:
                 botlog.info("HARI INI LIBUR")
