@@ -4,7 +4,6 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
-from tempfile import mkdtemp
 from .utilities import Util
 from time import sleep
 import logging
@@ -64,11 +63,10 @@ class BOT(Util):
             self.driver = webdriver.Chrome(options=options, service=service)
 
         elif self.server == 'local':
-            from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+            from selenium.webdriver.chrome.options import Options as ChromeOptions
             self.driver = webdriver.Remote(
                             command_executor='http://localhost:4444/wd/hub',
-                            desired_capabilities=DesiredCapabilities.CHROME,
-                            options=webdriver.ChromeOptions()
+                            options=ChromeOptions
                         )
             
     def get(self, url):
@@ -407,5 +405,5 @@ class BOT(Util):
                 botlog.info("HARI INI LIBUR")
                 break
             
-        # self.driver.close()
+        self.driver.close()
         botlog.info("================= TASK DONE =================")
