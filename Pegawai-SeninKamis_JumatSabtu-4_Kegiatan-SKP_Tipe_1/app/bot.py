@@ -66,7 +66,7 @@ class BOT(Util):
             from selenium.webdriver.chrome.options import Options as ChromeOptions
             self.driver = webdriver.Remote(
                             command_executor='http://localhost:4444/wd/hub',
-                            options=ChromeOptions
+                            options=ChromeOptions()
                         )
             
     def get(self, url):
