@@ -4,3 +4,4 @@ venv
 /env
 
 sheet_cred.json
+.vscode

@@ -1,8 +1,9 @@
-from google.oauth2.service_account import Credentials
-from datetime import datetime
-from dotenv import load_dotenv
-import gspread
 import os
+from datetime import datetime
+
+import gspread
+from dotenv import load_dotenv
+from google.oauth2.service_account import Credentials
 
 load_dotenv()
 

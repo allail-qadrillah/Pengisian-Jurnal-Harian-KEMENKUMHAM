@@ -7,9 +7,16 @@ import holidays
 import pytz
 import os
 
-from .spreadsheet import get_sheet_row_col, get_sheet_time, get_skp_value, get_sheet_table_values
+from .spreadsheet import (
+    get_sheet_row_col,
+    get_sheet_time,
+    get_skp_value,
+    get_sheet_table_values,
+)
 
 load_dotenv()
+
+
 class Util:
     """
     Utility class for various helper functions.
@@ -63,9 +70,10 @@ class Util:
         util.send_email('Subject', 'Body')
         pretty_output = util.parse_data_to_pretty_output(jurnal_data, 'senin-kamis')
     """
+
     def __init__(self) -> None:
         self.now = datetime.now()
-        self.tz = pytz.timezone('Asia/Jakarta')
+        self.tz = pytz.timezone("Asia/Jakarta")
         self.date = datetime.now(self.tz).date()
         self.time = datetime.now(self.tz).time().strftime("%H:%M:%S")
         self.weekday = datetime.today().weekday()
@@ -94,19 +102,19 @@ class Util:
         """
         try:
             # Parsing waktu dalam format jam:menit
-            jam, menit = map(int, time.split(':'))
+            jam, menit = map(int, time.split(":"))
 
             # Waktu dalam zona waktu Jakarta
             jakarta_time = self.tz.localize(
-                datetime(self.date.year, self.date.month, self.date.day, jam, menit, 0))
+                datetime(self.date.year, self.date.month, self.date.day, jam, menit, 0)
+            )
             # Konversi ke UTC
-            utc_time = jakarta_time.astimezone(pytz.timezone('UTC'))
-            return utc_time.strftime('%H:%M')
+            utc_time = jakarta_time.astimezone(pytz.timezone("UTC"))
+            return utc_time.strftime("%H:%M")
         except ValueError:
             return "Format waktu tidak valid"
 
     def cek_rentang_tanggal(self, mulai: str, selesai: str) -> bool:
-
         mulai = datetime.strptime(mulai, "%Y-%m-%d").date()
         selesai = datetime.strptime(selesai, "%Y-%m-%d").date()
         if mulai <= self.date <= selesai:
@@ -139,7 +147,7 @@ class Util:
                 ...
             }
         """
-        id_holidays = holidays.CountryHoliday('ID')
+        id_holidays = holidays.CountryHoliday("ID")
         # Mendapatkan daftar hari libur akhir pekan
         weekend_holidays = []
 
@@ -269,7 +277,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[1][5]),
                     "skp": get_skp_value(value[1][6])[0],
                     "skp_value": get_skp_value(value[1][6])[1],
-                    "jumlah_diselesaikan": int(value[1][7])
+                    "jumlah_diselesaikan": int(value[1][7]),
                 },
                 {
                     "kegiatan": value[2][1],
@@ -279,7 +287,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[2][5]),
                     "skp": get_skp_value(value[2][6])[0],
                     "skp_value": get_skp_value(value[2][6])[1],
-                    "jumlah_diselesaikan": int(value[2][7])
+                    "jumlah_diselesaikan": int(value[2][7]),
                 },
                 {
                     "kegiatan": value[3][1],
@@ -289,7 +297,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[3][5]),
                     "skp": get_skp_value(value[3][6])[0],
                     "skp_value": get_skp_value(value[3][6])[1],
-                    "jumlah_diselesaikan": int(value[3][7])
+                    "jumlah_diselesaikan": int(value[3][7]),
                 },
                 {
                     "kegiatan": value[4][1],
@@ -299,7 +307,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[4][5]),
                     "skp": get_skp_value(value[4][6])[0],
                     "skp_value": get_skp_value(value[4][6])[1],
-                    "jumlah_diselesaikan": int(value[4][7])
+                    "jumlah_diselesaikan": int(value[4][7]),
                 },
                 {
                     "kegiatan": value[5][1],
@@ -309,7 +317,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[5][5]),
                     "skp": get_skp_value(value[5][6])[0],
                     "skp_value": get_skp_value(value[5][6])[1],
-                    "jumlah_diselesaikan": int(value[5][7])
+                    "jumlah_diselesaikan": int(value[5][7]),
                 },
                 {
                     "kegiatan": value[6][1],
@@ -319,7 +327,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[6][5]),
                     "skp": get_skp_value(value[6][6])[0],
                     "skp_value": get_skp_value(value[6][6])[1],
-                    "jumlah_diselesaikan": int(value[6][7])
+                    "jumlah_diselesaikan": int(value[6][7]),
                 },
                 {
                     "kegiatan": value[7][1],
@@ -329,7 +337,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[7][5]),
                     "skp": get_skp_value(value[7][6])[0],
                     "skp_value": get_skp_value(value[7][6])[1],
-                    "jumlah_diselesaikan": int(value[7][7])
+                    "jumlah_diselesaikan": int(value[7][7]),
                 },
                 {
                     "kegiatan": value[8][1],
@@ -339,7 +347,7 @@ class Util:
                     "menit_selesai": get_sheet_time(value[8][5]),
                     "skp": get_skp_value(value[8][6])[0],
                     "skp_value": get_skp_value(value[8][6])[1],
-                    "jumlah_diselesaikan": int(value[8][7])
+                    "jumlah_diselesaikan": int(value[8][7]),
                 },
                 {
                     "kegiatan": value[9][1],
@@ -349,12 +357,12 @@ class Util:
                     "menit_selesai": get_sheet_time(value[9][5]),
                     "skp": get_skp_value(value[9][6])[0],
                     "skp_value": get_skp_value(value[9][6])[1],
-                    "jumlah_diselesaikan": int(value[9][7])
-                }
+                    "jumlah_diselesaikan": int(value[9][7]),
+                },
             ]
         }
 
-    def send_email(self, subject:str, body:str):
+    def send_email(self, subject: str, body: str):
         """
         Sends an email to a specified receiver.
 
@@ -374,17 +382,20 @@ class Util:
 
             if RECEIVER_EMAIL is not None:
                 logging.info(f"Sending email to {RECEIVER_EMAIL}")
-                server_ssl = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
                 server_ssl.ehlo()
-                server_ssl.login(os.getenv('email_sender'), os.getenv('email_password'))
-                server_ssl.sendmail(os.getenv('email_sender'), RECEIVER_EMAIL, 
-                                    f"Subject: {subject}\n\n{body}")
+                server_ssl.login(os.getenv("email_sender"), os.getenv("email_password"))
+                server_ssl.sendmail(
+                    os.getenv("email_sender"),
+                    RECEIVER_EMAIL,
+                    f"Subject: {subject}\n\n{body}",
+                )
                 server_ssl.close()
 
         except Exception as e:
-            print('Error:', e)
+            print("Error:", e)
 
-    def parse_data_to_pretty_output(self, json_data:dict, value:str):
+    def parse_data_to_pretty_output(self, json_data: dict, value: str):
         """
         Parses data from the journal into a formatted description.
 

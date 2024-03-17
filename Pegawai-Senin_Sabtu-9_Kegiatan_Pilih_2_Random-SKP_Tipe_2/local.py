@@ -6,3 +6,4 @@ logging.basicConfig(level=logging.INFO,
 
 bot = BOT(server="local")
 bot.start()
+
