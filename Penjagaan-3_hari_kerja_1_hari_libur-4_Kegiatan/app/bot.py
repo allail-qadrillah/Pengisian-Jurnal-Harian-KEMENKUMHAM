@@ -355,7 +355,7 @@ class BOT(Util):
         while not self.is_complete_fill:
             if self.is_complete_fill: break
             if self.exception_occured: break
-
+            
             if self.login(): # JIKA BERHASIL LOGIN
                 # JIKA HARI INI HARI KERJA 1
                 if self.status_hari_ini() == "Hari Kerja 1":

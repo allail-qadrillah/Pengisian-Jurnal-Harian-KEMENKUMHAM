@@ -1,8 +1,9 @@
 from app import BOT
 import logging
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 bot = BOT(server="local")
 bot.start()
+

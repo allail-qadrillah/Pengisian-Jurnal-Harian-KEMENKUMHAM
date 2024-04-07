@@ -1,5 +1,19 @@
 # PENGISIAN JURNAL HARIAN SIMPEG KEMENKUMHAM
+
+![Demo how this works](./docs/demo.gif)
+
 Program ini dirancang untuk mengisi jurnal harian SIMPEG KEMENKUMHAM secara otomatis dari hari Senin hingga Sabtu. Kegiatan yang diisi dalam jurnal harian diambil dari  [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1nZFDpksz0wP68EUuUR_FfiENzwdYnKU0HHoWhbjLlDo/edit?usp=sharing) yang dapat diedit kapan pun. Program ini menyediakan dua cara untuk dijalankan: pada komputer lokal atau dengan deployment pada AWS Lambda.
+
+Terdapat 4 jenis program dalam pengisian jurnalnya:
+
+1. [Pegawai-SeninKamis_JumatSabtu-4_Kegiatan-SKP_Tipe_1](https://github.com/allail-qadrillah/Pengisian-Jurnal-Harian-KEMENKUMHAM/tree/main/Pegawai-SeninKamis_JumatSabtu-4_Kegiatan-SKP_Tipe_1)
+  Pengguna dengan tipe Pegawai yang akan di isi dari hari Senin-Kamis dan Jumat-Sabtu dengan 4 kegiatan berbeda dan SKP tipe 1.
+2. [Pegawai-SeninKamis_JumatSabtu-6_Kegiatan-SKP_Tipe_1](https://github.com/allail-qadrillah/Pengisian-Jurnal-Harian-KEMENKUMHAM/tree/main/Pegawai-SeninKamis_JumatSabtu-6_Kegiatan-SKP_Tipe_1)
+  Pengguna dengan tipe Pegawai yang akan di isi dari hari Senin-Kamis dan Jumat-Sabtu dengan 6 kegiatan berbeda dan SKP tipe 1.
+3. [Pegawai-Senin_Sabtu-9_Kegiatan_Pilih_2_Random-SKP_Tipe_2](https://github.com/allail-qadrillah/Pengisian-Jurnal-Harian-KEMENKUMHAM/tree/main/Pegawai-Senin_Sabtu-9_Kegiatan_Pilih_2_Random-SKP_Tipe_2)
+  Pengguna dengan tipe Pegawai yang akan di isi dari hari Senin-Sabtu dengan 9 kegiatan yang dipilih secara random dan SKP tipe 2.
+4. [Penjagaan-3_hari_kerja_1_hari_libur-4_Kegiatan](https://github.com/allail-qadrillah/Pengisian-Jurnal-Harian-KEMENKUMHAM/tree/main/Penjagaan-3_hari_kerja_1_hari_libur-4_Kegiatan)
+  Pengguna dengan tipe Penjagaan yang akan di isi menggunakan pola 3 hari kerja dan 1 hari libur dengan 4 kegiatan setiap harinya.
 
 ![Spreadsheet image](./docs/spreadsheet.png)
 ---
